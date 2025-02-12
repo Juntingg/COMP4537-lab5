@@ -1,4 +1,4 @@
-const Server = require("./classes/serverClass");
+const Server = require("./classes/server");
 const port = 8000;
 const endpoint = "*";
 
