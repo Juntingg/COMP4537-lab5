@@ -39,7 +39,7 @@ class Server {
                 return;
             }
 
-            if (!q.pathname.startsWith(this.endpoint)) {
+            if (!q.pathname.startsWith(this.endPoint)) {
                 res.end(`<p style="color: red;">${msgs.error404}</p>`);// page not found
                 return;
             }
