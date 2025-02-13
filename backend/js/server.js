@@ -30,7 +30,7 @@ class Server {
                 return;
             }
 
-            if (!q.pathname.startsWith(this.endpoint)) {
+            if (!q.pathname.startsWith(this.endPoint)) {
                 res.end(JSON.stringify({ message: msgs.error404 })); // page not found
                 return;
             }
