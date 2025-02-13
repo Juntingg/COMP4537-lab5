@@ -6,12 +6,12 @@ const msgs = require("../lang/en");
 
 class Server {
     port;
-    endPoint;
+    endpoint;
     server;
 
-    constructor(port, endPoint) {
+    constructor(port, endpoint) {
         this.port = port;
-        this.endPoint = endPoint;
+        this.endpoint = endpoint;
         this.createServer();
     }
 
@@ -31,7 +31,7 @@ class Server {
             }
 
             if (!q.pathname.startsWith(this.endpoint)) {
-                res.end(JSON.stringify({ message: msgs.error404 })); // page not found
+                res.end(`<p style="color: red;">${msgs.error404}</p>`);// page not found
                 return;
             }
 
@@ -40,8 +40,8 @@ class Server {
             } else if (req.method === "POST") {
                 this.handlePost(req, res, q);
             } else {
-                res.writeHead(405, { "Content-Type": "application/json" });
-                res.end(JSON.stringify({ message: msgs.error405 })); // method not supported
+                res.writeHead(405, { "Content-Type": "text/html" });
+                res.end(`<p style="color: red;">${msgs.error405}</p>`); // method not supported
             }
         });
     }
@@ -50,6 +50,30 @@ class Server {
         this.server.listen(this.port)
     }
 
+    closeServer() {
+        this.server.close();
+    }
+
+    async handlePost(req, res, q) {
+        try {
+            const data = await parseBody(req);
+        } catch (err) {
+            res.writeHead(400, { "Content-Type": "text/html" });
+            res.end(`<p style="color: red;">${err.message}</p>`);
+        }
+    }
+
+    parseBody(req) {
+        return new Promise((resolve) => {
+            let body = ""; // empty string to store req data
+            req.on("data", chunk => { // listen for data events
+                body += chunk; // append chunk to body
+            });
+            req.on("end", () => { // end when all chunks received
+                resolve(body); // resolve with raw body
+            });
+        });
+    }
 
 }
 
