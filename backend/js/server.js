@@ -3,11 +3,13 @@
 const http = require("http");
 const url = require("url");
 const msgs = require("../lang/en");
+const dao = require("./DAO")
 
 class Server {
     port;
     endpoint;
     server;
+    dao;
 
     constructor(port, endpoint) {
         this.port = port;
@@ -16,6 +18,13 @@ class Server {
     }
 
     createServer() {
+        try {
+            this.dao = new dao.DAO();
+        } catch (e) {
+            console.error("Error establishing connection to DB, please restart server to try again");
+            return;
+        }
+        
         this.server = http.createServer((req, res) => {
             const q = url.parse(req.url, true);
 
