@@ -1,3 +1,5 @@
+//This code was assisted by ChatGPT, OpenAI.
+
 class SQLQueryManager {
     static defaultRows = new Array(
         { name: 'Sara Brown', dateOfBirth: "1901-01-01" },
@@ -17,15 +19,15 @@ class SQLQueryManager {
 
     static handleInsert() {
         let query = this.defaultQuery;
-        for (let i = 0; i++; i < this.defaultRows.length) {
-            query += `(${this.defaultRows[i].name}, ${this.defaultRows[i].dateOfBirth})`
+        for (let i = 0; i < this.defaultRows.length; i++) {
+            query += `("${this.defaultRows[i].name}", "${this.defaultRows[i].dateOfBirth}")`
             if (i === this.defaultRows.length - 1) {
                 query += ';';
             } else {
                 query += ',';
             }
         }
-        this.handleSubmit();
+        this.handlePost(query);
         return;
     }
 
