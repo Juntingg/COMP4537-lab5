@@ -1,4 +1,4 @@
-const Server = require("./classes/server");
+const Server = require("./js/server");
 const port = 8000;
 const endpoint = "/api/v1/sql/";
 
