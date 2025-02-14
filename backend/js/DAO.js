@@ -1,32 +1,20 @@
-const mysql = require("mysql");
-const { DBConfig } = require("./DBConfig");
+const DBConfig = require("./DBConfig");
 
 class DAO {
-    database;
-
-    constructor() {
-        const dbConfig = new DBConfig();
-        this.database = dbConfig.getDatabase();
+    static async insertPatient(name, dateOfBirth) {
+        const sql = `INSERT INTO ${process.env.DB_TABLE} (name, dateOfBirth) VALUES (?, ?)`;
+        return DBConfig.query(sql, [name, dateOfBirth]);
     }
 
-    async queryDB(query, params = []) {
-        return new Promise((resolve, reject) => {
-            this.database.query(query, params, (err, result) => {
-                if (err) return reject(err);
-                resolve(result);
-            });
-        });
+    static async getPatientById(patientId) {
+        const sql = `SELECT * FROM ${process.env.DB_TABLE} WHERE patientid = ?`;
+        return DBConfig.query(sql, [patientId]);
     }
 
-    async insertPatient(name, dateOfBirth) {
-        const query = `INSERT INTO ${process.env.DB_TABLE} (name, dateOfBirth) VALUES (?, ?)`;
-        return this.queryDB(query, [name, dateOfBirth]);
-    }
-
-    async getPatientById(patientId) {
-        const query = `SELECT * FROM ${process.env.DB_TABLE} WHERE patientid = ?`;
-        return this.queryDB(query, [patientId]);
+    static async getAllPatients() {
+        const sql = `SELECT * FROM ${process.env.DB_TABLE}`;
+        return DBConfig.query(sql);
     }
 }
 
-exports.DAO = DAO;
+module.exports = DAO;
