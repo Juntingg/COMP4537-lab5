@@ -3,123 +3,116 @@
 const http = require("http");
 const url = require("url");
 const DBConfig = require("./DBConfig");
-const DAO = require("./DAO");
-const msgs = require("../lang/en");
-
-// Initialize DB on server start
-DBConfig.initializeDatabase()
-    .then(() => console.log("Database initialized"))
-    .catch((err) => {
-        console.error("Database initialization failed:", err);
-        process.exit(1); // Exit if DB initialization fails
-    });
 
 class Server {
-    port;
-    endpoint;
-    server;
+    #port;
+    #endpoint;
+    #server;
 
     constructor(port, endpoint) {
-        this.port = port;
-        this.endpoint = endpoint;
-        this.createServer();
+        this.#port = port;
+        this.#endpoint = endpoint;
+        this.#createServer();
     }
 
-    createServer() {
-        this.server = http.createServer((req, res) => {
+    #createServer() {
+        try {
+            this.DBConfig = new DBConfig.DBConfig();
+        } catch (e) {
+            console.error("Error establishing connection to DB, please restart server to try again");
+            return;
+        }
+        this.#server = http.createServer((req, res) => {
             const q = url.parse(req.url, true);
 
-            res.setHeader("Access-Control-Allow-Origin", "*"); // allows any domain to make requests to server
-            res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS"); // defines which HTTP methods allowed
-            res.setHeader("Access-Control-Allow-Headers", "Content-Type"); // allows the client to send custom headers
-            res.setHeader("Content-Type", "text/html"); // response in HTML format
+            res.setHeader("Access-Control-Allow-Origin", "*"); // Allow any domain to make requests
+            res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS"); // Allow GET, POST, OPTIONS
+            res.setHeader("Access-Control-Allow-Headers", "Content-Type"); // Allow custom headers
+            res.setHeader("Content-Type", "text/html"); // Response in HTML format
 
-            // handle options
+            // Handle OPTIONS (preflight requests)
             if (req.method === "OPTIONS") {
-                res.writeHead(204).end();  // no content
+                res.writeHead(204).end(); // No content
                 return;
             }
 
-            if (!q.pathname.startsWith(this.endpoint)) {
-                res.end(`<p style="color: red;">${msgs.error404}</p>`); // page not found
+            if (!q.pathname.startsWith(this.#endpoint)) {
+                res.end(JSON.stringify({ message: msgs.error404 })); // page not found
                 return;
             }
 
             if (req.method === "GET") {
-                this.handleGet(req, res, q);
+                this.#handleGet(req, res);
             } else if (req.method === "POST") {
-                this.handlePost(req, res, q);
+                this.#handlePost(req, res);
             } else {
-                res.writeHead(405, { "Content-Type": "text/html" });
-                res.end(`<p style="color: red;">${msgs.error405}</p>`); // method not supported
+                res.writeHead(405, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ message: msgs.error405 })); // method not supported
             }
         });
     }
 
     startServer() {
-        this.server.listen(this.port, async () => {
-            console.log(`Server running on port ${this.port}`);
-
-            // Test: Insert a patient when the server starts
-            try {
-                const result = await DAO.insertPatient("John Doe", "1990-01-01"); // Test insert
-                console.log("Test patient inserted successfully:", result);
-            } catch (err) {
-                console.error("Error inserting test patient:", err.message);
-            }
+        this.#server.listen(this.#port, () => {
+            console.log(`Server running on port ${this.#port}`);
         });
     }
 
     closeServer() {
-        this.server.close();
+        this.#server.close();
     }
 
-    async handleGet(req, res, q) {
-        try {
-            const patientId = q.query.id; // Get the patient ID from the query string
-            if (patientId) {
-                // Fetch a specific patient by ID
-                const patient = await DAO.getPatientById(patientId);
-                if (patient.length > 0) {
-                    res.writeHead(200, { "Content-Type": "text/html" });
-                    res.end(`<p>Patient found: ${JSON.stringify(patient[0])}</p>`);
-                } else {
-                    res.writeHead(404, { "Content-Type": "text/html" });
-                    res.end(`<p style="color: red;">Patient not found</p>`);
-                }
-            } else {
-                // Fetch all patients (if no ID is provided)
-                const patients = await DAO.getAllPatients();
-                res.writeHead(200, { "Content-Type": "text/html" });
-                res.end(`<p>All patients: ${JSON.stringify(patients)}</p>`);
-            }
-        } catch (err) {
-            res.writeHead(500, { "Content-Type": "text/html" });
-            res.end(`<p style="color: red;">${err.message}</p>`);
+    async #handleGet(req, res) {
+
+        const encodedUrl = req.url.split(this.#endpoint)[1];
+        const query = decodeURIComponent(encodedUrl).replaceAll("\"", ""); // Remove quotes
+
+        // Validate that the query is a SELECT query
+        if (query.split(" ")[0].toUpperCase() !== "SELECT") {
+            res.writeHead(400).end(JSON.stringify({ error: "GET request only supports SELECT queries" }));
+            return;
         }
-    }
 
-    async handlePost(req, res, q) {
+        let result;
         try {
-            const body = await this.parseBody(req);
-            const data = JSON.parse(body); // Parse the body as JSON
-            const result = await DAO.insertPatient(data.name, data.dateOfBirth);
-            res.writeHead(200, { "Content-Type": "text/html" });
-            res.end(`<p>Patient inserted successfully: ${JSON.stringify(result)}</p>`);
-        } catch (err) {
-            res.writeHead(400, { "Content-Type": "text/html" });
-            res.end(`<p style="color: red;">${err.message}</p>`);
+            result = await this.DBConfig.queryDB(query); // Execute the query
+        } catch (e) {
+            res.writeHead(400).end(JSON.stringify({ error: e.sqlMessage || "Invalid query" }));
+            return;
         }
+
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ result }));
     }
 
-    parseBody(req) {
+    async #handlePost(req, res) {
+        const data = await this.#parseBody(req);
+
+        if (!data || data.split(" ")[0].toUpperCase() !== "INSERT") {
+            res.writeHead(400).end(JSON.stringify({ error: "POST request only supports INSERT queries" }));
+            return;
+        }
+
+        try {
+            data
+            await this.DBConfig.queryDB(data); // Execute the query
+        } catch (e) {
+            res.writeHead(400).end(JSON.stringify({ error: e.sqlMessage || "Invalid query" }));
+            return;
+        }
+
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ result: "Database successfully updated" }));
+    }
+
+    #parseBody(req) {
         return new Promise((resolve) => {
-            let body = ""; // empty string to store req data
-            req.on("data", chunk => { // listen for data events
-                body += chunk; // append chunk to body
+            let body = ""; // Empty string to store request data
+            req.on("data", (chunk) => { // Listen for data events
+                body += chunk; // Append chunk to body
             });
-            req.on("end", () => { // end when all chunks received
-                resolve(body); // resolve with raw body
+            req.on("end", () => { // End when all chunks are received
+                resolve(body); // Resolve with the raw body
             });
         });
     }
