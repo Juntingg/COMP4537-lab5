@@ -23,13 +23,14 @@ class Server {
         } catch (e) {
             process.exit(1)
         }
+
         this.#server = http.createServer((req, res) => {
             const q = url.parse(req.url, true);
 
             res.setHeader("Access-Control-Allow-Origin", "*"); // Allow any domain to make requests
             res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS"); // Allow GET, POST, OPTIONS
             res.setHeader("Access-Control-Allow-Headers", "Content-Type"); // Allow custom headers
-            res.setHeader("Content-Type", "application/json"); // Response in HTML format
+            res.setHeader("Content-Type", "application/json"); // Response in JSON format
 
             // Handle OPTIONS (preflight requests)
             if (req.method === "OPTIONS") {
