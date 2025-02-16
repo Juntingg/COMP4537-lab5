@@ -3,6 +3,7 @@
 const http = require("http");
 const url = require("url");
 const DBConfig = require("./DBConfig");
+const msgs = require("../lang/en")
 
 class Server {
     #port;
@@ -28,7 +29,7 @@ class Server {
             res.setHeader("Access-Control-Allow-Origin", "*"); // Allow any domain to make requests
             res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS"); // Allow GET, POST, OPTIONS
             res.setHeader("Access-Control-Allow-Headers", "Content-Type"); // Allow custom headers
-            res.setHeader("Content-Type", "text/html"); // Response in HTML format
+            res.setHeader("Content-Type", "application/json"); // Response in HTML format
 
             // Handle OPTIONS (preflight requests)
             if (req.method === "OPTIONS") {
