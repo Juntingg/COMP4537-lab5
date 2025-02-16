@@ -1,3 +1,4 @@
+// This code was assisted by ChatGPT, OpenAI.
 "use strict";
 
 const http = require("http");
@@ -20,8 +21,7 @@ class Server {
         try {
             this.DBConfig = new DBConfig.DBConfig();
         } catch (e) {
-            console.error("Error establishing connection to DB, please restart server to try again");
-            return;
+            process.exit(1)
         }
         this.#server = http.createServer((req, res) => {
             const q = url.parse(req.url, true);
@@ -38,7 +38,7 @@ class Server {
             }
 
             if (!q.pathname.startsWith(this.#endpoint)) {
-                res.end(JSON.stringify({ message: msgs.error404 })); // page not found
+                res.end(JSON.stringify({ error: msgs.error404 })); // page not found
                 return;
             }
 
@@ -48,15 +48,13 @@ class Server {
                 this.#handlePost(req, res);
             } else {
                 res.writeHead(405, { "Content-Type": "application/json" });
-                res.end(JSON.stringify({ message: msgs.error405 })); // method not supported
+                res.end(JSON.stringify({ error: msgs.error405 })); // method not supported
             }
         });
     }
 
     startServer() {
-        this.#server.listen(this.#port, () => {
-            console.log(`Server running on port ${this.#port}`);
-        });
+        this.#server.listen(this.#port)
     }
 
     closeServer() {
@@ -64,46 +62,49 @@ class Server {
     }
 
     async #handleGet(req, res) {
-
-        const encodedUrl = req.url.split(this.#endpoint)[1];
-        const query = decodeURIComponent(encodedUrl).replaceAll("\"", ""); // Remove quotes
-
-        // Validate that the query is a SELECT query
-        if (query.split(" ")[0].toUpperCase() !== "SELECT") {
-            res.writeHead(400).end(JSON.stringify({ error: "GET request only supports SELECT queries" }));
-            return;
-        }
-
-        let result;
         try {
-            result = await this.DBConfig.queryDB(query); // Execute the query
-        } catch (e) {
-            res.writeHead(400).end(JSON.stringify({ error: e.sqlMessage || "Invalid query" }));
-            return;
-        }
+            // extract the query from the URL path
+            const encodedUrl = req.url.split(this.#endpoint)[1]; // endpoint is "/api/v1/sql/"
+            if (!encodedUrl) {
+                res.writeHead(400).end(JSON.stringify({ error: msgs.errorNoQuery }));
+                return;
+            }
 
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ result }));
+            const query = decodeURIComponent(encodedUrl).replaceAll("\"", ""); // remove quotes and decode
+
+            // validate that the query is a SELECT query
+            if (!query || !query.trim().toUpperCase().startsWith("SELECT")) {
+                res.writeHead(400).end(JSON.stringify({ error: msgs.errorGet }));
+                return;
+            }
+
+            const result = await this.DBConfig.queryDB(query);  // execute query
+
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ result }));
+        } catch (e) {
+            res.writeHead(400).end(JSON.stringify({ error: e.sqlMessage }));
+        }
     }
 
     async #handlePost(req, res) {
-        const data = await this.#parseBody(req);
-
-        if (!data || data.split(" ")[0].toUpperCase() !== "INSERT") {
-            res.writeHead(400).end(JSON.stringify({ error: "POST request only supports INSERT queries" }));
-            return;
-        }
-
         try {
-            data
-            await this.DBConfig.queryDB(data); // Execute the query
-        } catch (e) {
-            res.writeHead(400).end(JSON.stringify({ error: e.sqlMessage || "Invalid query" }));
-            return;
-        }
+            const data = await this.#parseBody(req); // parse the request body
 
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ result: "Database successfully updated" }));
+            // validate that the query is an INSERT query
+            if (!data || !data.trim().toUpperCase().startsWith("INSERT")) {
+                res.writeHead(400).end(JSON.stringify({ error: msgs.errorPost }));
+                return;
+            }
+
+            // execute the query
+            await this.DBConfig.queryDB(data);
+
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ result: msgs.success }));
+        } catch (e) {
+            res.writeHead(400).end(JSON.stringify({ error: e.sqlMessage }));
+        }
     }
 
     #parseBody(req) {
