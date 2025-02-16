@@ -3,7 +3,7 @@
 
 const http = require("http");
 const url = require("url");
-const DBConfig = require("./DBConfig");
+const DBManager = require("./DBManager");
 const msgs = require("../lang/en")
 
 class Server {
@@ -19,7 +19,7 @@ class Server {
 
     #createServer() {
         try {
-            this.DBConfig = new DBConfig.DBConfig();
+            this.DBManager = new DBManager.DBManager();
         } catch (e) {
             process.exit(1)
         }
@@ -78,7 +78,7 @@ class Server {
                 return;
             }
 
-            const result = await this.DBConfig.queryDB(query);  // execute query
+            const result = await this.DBManager.queryDB(query);  // execute query
 
             res.writeHead(200, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ result }));
@@ -98,7 +98,7 @@ class Server {
             }
 
             // execute the query
-            await this.DBConfig.queryDB(data);
+            await this.DBManager.queryDB(data);
 
             res.writeHead(200, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ result: msgs.success }));

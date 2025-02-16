@@ -1,7 +1,7 @@
 // This code was assisted by ChatGPT, OpenAI.
 const mysql = require("mysql");
 require("dotenv").config();
-class DBConfig {
+class DBManager {
 
     static config = {
         host: process.env.DB_HOST,
@@ -30,12 +30,12 @@ class DBConfig {
 
     async #connectToDB() {
         // Create database if it doesn't exist
-        this.#database = mysql.createConnection(DBConfig.config);
-        await this.queryDB(DBConfig.createDB);
+        this.#database = mysql.createConnection(DBManager.config);
+        await this.queryDB(DBManager.createDB);
         this.queryDB(`USE ${process.env.DB_NAME}`);
-        this, this.queryDB(DBConfig.createTable);
+        this, this.queryDB(DBManager.createTable);
     }
 
 }
 
-exports.DBConfig = DBConfig;
+exports.DBManager = DBManager;
