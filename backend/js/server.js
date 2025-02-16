@@ -39,6 +39,7 @@ class Server {
             }
 
             if (!q.pathname.startsWith(this.#endpoint)) {
+                res.writeHead(404, { "Content-Type": "application/json" });
                 res.end(JSON.stringify({ error: msgs.error404 })); // page not found
                 return;
             }
