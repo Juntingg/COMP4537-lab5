@@ -17,8 +17,7 @@ class DBManager {
     constructor() {
         this.#createDB = `CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME}`;
         this.#createTable = `CREATE TABLE IF NOT EXISTS ${process.env.DB_NAME}.${process.env.DB_TABLE} 
-            (patientid INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100), dateOfBirth DATETIME)
-            ENGINE=InnoDB`;
+            (patientid INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100), dateOfBirth DATETIME)`;
         this.#connectDatabase();
     }
 
