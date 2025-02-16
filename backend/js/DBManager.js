@@ -14,6 +14,7 @@ class DBManager {
 
     constructor() {
         this.#database = mysql.createConnection(DBManager.config); // creates a connection to the MySQL server using config
+        this.initializeDatabase(); // initialize database and create table
     }
 
     // asynchronous method that executes a SQL query
