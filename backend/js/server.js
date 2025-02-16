@@ -70,7 +70,8 @@ class Server {
                 return;
             }
 
-            const query = decodeURIComponent(encodedUrl).replaceAll("\"", ""); // remove quotes and decode
+            // remove quotes and decode
+            const query = decodeURIComponent(encodedUrl).replaceAll("\"", "");
 
             // validate that the query is a SELECT query
             if (!query || !query.trim().toUpperCase().startsWith("SELECT")) {
@@ -78,7 +79,8 @@ class Server {
                 return;
             }
 
-            const result = await this.DBManager.queryDB(query); // execute query
+            // execute query
+            const result = await this.DBManager.queryDB(query);
 
             res.writeHead(200).end(JSON.stringify({ result }));
         } catch (e) {
