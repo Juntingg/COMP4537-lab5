@@ -96,7 +96,11 @@ class Server {
                 return;
             }
 
-            await this.DBManager.queryDB(data); // execute the query
+            // creates database and table if doesn't exist
+            await this.DBManager.initializeDatabase();
+
+            // execute the query
+            await this.DBManager.queryDB(data);
 
             res.writeHead(200).end(JSON.stringify({ result: msgs.success }));
         } catch (e) {
