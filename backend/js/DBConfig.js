@@ -1,3 +1,4 @@
+// This code was assisted by ChatGPT, OpenAI.
 const mysql = require("mysql");
 require("dotenv").config();
 class DBConfig {
