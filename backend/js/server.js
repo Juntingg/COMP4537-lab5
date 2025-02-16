@@ -39,8 +39,8 @@ class Server {
             }
 
             if (!q.pathname.startsWith(this.#endpoint)) {
-                res.writeHead(404, { "Content-Type": "application/json" });
-                res.end(JSON.stringify({ error: msgs.error404 })); // page not found
+                // page not found
+                res.writeHead(404, { "Content-Type": "application/json" }).end(JSON.stringify({ error: msgs.error404 }));
                 return;
             }
 
@@ -49,8 +49,8 @@ class Server {
             } else if (req.method === "POST") {
                 this.#handlePost(req, res);
             } else {
-                res.writeHead(405, { "Content-Type": "application/json" });
-                res.end(JSON.stringify({ error: msgs.error405 })); // method not supported
+                // method not supported
+                res.writeHead(405, { "Content-Type": "application/json" }).end(JSON.stringify({ error: msgs.error405 }));
             }
         });
     }
@@ -82,8 +82,7 @@ class Server {
 
             const result = await this.DBManager.queryDB(query);  // execute query
 
-            res.writeHead(200, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ result }));
+            res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify({ result }));
         } catch (e) {
             res.writeHead(400).end(JSON.stringify({ error: e.sqlMessage }));
         }
@@ -102,8 +101,7 @@ class Server {
             // execute the query
             await this.DBManager.queryDB(data);
 
-            res.writeHead(200, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ result: msgs.success }));
+            res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify({ result: msgs.success }));
         } catch (e) {
             res.writeHead(400).end(JSON.stringify({ error: e.sqlMessage }));
         }
