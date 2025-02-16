@@ -3,20 +3,20 @@ const mysql = require("mysql");
 require("dotenv").config();
 
 class DBManager {
-
     static config = {
         host: process.env.DB_HOST,
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD
-    }
-
-    static createDB = `CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME}`;
-    static createTable = `CREATE TABLE IF NOT EXISTS ${process.env.DB_NAME}.${process.env.DB_TABLE}
-        (patientid INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100), dateOfBirth dateTime)`;
+    };
 
     #database;
+    #createDB;
+    #createTable;
 
     constructor() {
+        this.#createDB = `CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME}`;
+        this.#createTable = `CREATE TABLE IF NOT EXISTS ${process.env.DB_NAME}.${process.env.DB_TABLE}
+            (patientid INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100), dateOfBirth dateTime)`;
         this.#connectDatabase();
     }
 
@@ -32,9 +32,9 @@ class DBManager {
 
     async #connectDatabase() {
         this.#database = mysql.createConnection(DBManager.config); // creates a connection to the MySQL server using config
-        await this.queryDB(DBManager.createDB); // executes the CREATE DATABASE query to create the database if it doesn’t exist
+        await this.queryDB(this.#createDB); // executes the CREATE DATABASE query to create the database if it doesn’t exist
         this.queryDB(`USE ${process.env.DB_NAME}`); // switches to the specified database
-        this, this.queryDB(DBManager.createTable); // query to create the table if it doesn’t exist
+        this.queryDB(this.#createTable); // query to create the table if it doesn’t exist
     }
 }
 
