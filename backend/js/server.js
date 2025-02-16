@@ -78,7 +78,7 @@ class Server {
                 return;
             }
 
-            const result = await this.DBManager.queryDB(query);  // execute query
+            const result = await this.DBManager.queryDB(query); // execute query
 
             res.writeHead(200).end(JSON.stringify({ result }));
         } catch (e) {
@@ -96,8 +96,7 @@ class Server {
                 return;
             }
 
-            // execute the query
-            await this.DBManager.queryDB(data);
+            await this.DBManager.queryDB(data); // execute the query
 
             res.writeHead(200).end(JSON.stringify({ result: msgs.success }));
         } catch (e) {
