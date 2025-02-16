@@ -11,14 +11,9 @@ class DBManager {
     };
 
     #database;
-    #createDB;
-    #createTable;
 
     constructor() {
-        this.#createDB = `CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME}`;
-        this.#createTable = `CREATE TABLE IF NOT EXISTS ${process.env.DB_NAME}.${process.env.DB_TABLE} 
-            (patientid INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100), dateOfBirth DATETIME)`;
-        this.#connectDatabase();
+        this.#database = mysql.createConnection(DBManager.config); // creates a connection to the MySQL server using config
     }
 
     // asynchronous method that executes a SQL query
@@ -31,11 +26,16 @@ class DBManager {
         });
     }
 
-    async #connectDatabase() {
-        this.#database = mysql.createConnection(DBManager.config); // creates a connection to the MySQL server using config
-        await this.queryDB(this.#createDB); // executes the CREATE DATABASE query to create the database if it doesn’t exist
-        this.queryDB(`USE ${process.env.DB_NAME}`); // switches to the specified database
-        this.queryDB(this.#createTable); // query to create the table if it doesn’t exist
+    async initializeDatabase() {
+        // executes the CREATE DATABASE query to create the database if it doesn’t exist
+        await this.queryDB(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME}`);
+
+        // switches to the specified database
+        this.queryDB(`USE ${process.env.DB_NAME}`);
+
+        // query to create the table if it doesn’t exist
+        this.queryDB(`CREATE TABLE IF NOT EXISTS ${process.env.DB_NAME}.${process.env.DB_TABLE}
+            (patientid INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100), dateOfBirth DATETIME)`);
     }
 }
 
