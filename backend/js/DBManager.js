@@ -1,6 +1,7 @@
 // This code was assisted by ChatGPT, OpenAI.
 const mysql = require("mysql");
 require("dotenv").config();
+
 class DBManager {
 
     static config = {
@@ -16,11 +17,12 @@ class DBManager {
     #database;
 
     constructor() {
-        this.#connectToDB();
+        this.#connectDatabase();
     }
 
+    // asynchronous method that executes a SQL query
     async queryDB(query) {
-        return new Promise((res, rej) => {
+        return new Promise((res, rej) => { // Promise that resolves with the query result or rejects with an error
             this.#database.query(query, (err, result) => {
                 if (err) return rej(err);
                 res(result);
@@ -28,14 +30,12 @@ class DBManager {
         });
     }
 
-    async #connectToDB() {
-        // Create database if it doesn't exist
-        this.#database = mysql.createConnection(DBManager.config);
-        await this.queryDB(DBManager.createDB);
-        this.queryDB(`USE ${process.env.DB_NAME}`);
-        this, this.queryDB(DBManager.createTable);
+    async #connectDatabase() {
+        this.#database = mysql.createConnection(DBManager.config); // creates a connection to the MySQL server using config
+        await this.queryDB(DBManager.createDB); // executes the CREATE DATABASE query to create the database if it doesn’t exist
+        this.queryDB(`USE ${process.env.DB_NAME}`); // switches to the specified database
+        this, this.queryDB(DBManager.createTable); // query to create the table if it doesn’t exist
     }
-
 }
 
 exports.DBManager = DBManager;
