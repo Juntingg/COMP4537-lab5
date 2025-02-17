@@ -56,8 +56,6 @@ class SQLQueryManager {
                 body: query
             });
 
-            // const text = await response.text();  
-            // console.log("Response text:", text);
             const data = await response.json();
             if (data.error) {
                 this.outputContainer.innerHTML = data.error;
@@ -71,10 +69,8 @@ class SQLQueryManager {
     }
     async handleGet(query) {
         try {
-            console.log(`${SQLQueryManager.endPoint}"${query}"`);
             const response = await fetch(`${SQLQueryManager.endPoint}"${query}"`);
             const data = await response.json();
-            console.log(data);
             if (data.error) {
                 this.outputContainer.innerHTML = data.error;
             } else {
