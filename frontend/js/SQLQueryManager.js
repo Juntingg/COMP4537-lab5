@@ -20,7 +20,7 @@ class SQLQueryManager {
     handleInsert() {
         let query = SQLQueryManager.defaultQuery;
         for (let i = 0; i < SQLQueryManager.defaultRows.length; i++) {
-            query += `("${SQLQueryManager.defaultRows[i].name}", "${SQLQueryManager.defaultRows[i].dateOfBirth}")`
+            query += `('${SQLQueryManager.defaultRows[i].name}', '${SQLQueryManager.defaultRows[i].dateOfBirth}')`
             if (i === SQLQueryManager.defaultRows.length - 1) {
                 query += ';';
             } else {
