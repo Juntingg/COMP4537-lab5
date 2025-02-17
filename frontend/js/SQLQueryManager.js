@@ -7,7 +7,7 @@ class SQLQueryManager {
         { name: 'Jack Ma', dateOfBirth: "1961-01-30" },
         { name: 'Elon Musk', dateOfBirth: "1999-01-01" },
     )
-    static endPoint = "http://localhost:8000/api/v1/sql/";
+    static endPoint = "https://comp4537-lab5-backend-aa8fl.ondigitalocean.app/api/v1/sql/";
     static defaultQuery = "INSERT INTO patient (name, dateOfBirth) VALUES "
 
     outputContainer;
