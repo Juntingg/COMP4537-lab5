@@ -7,8 +7,8 @@ class SQLQueryManager {
         { name: 'Jack Ma', dateOfBirth: "1961-01-30" },
         { name: 'Elon Musk', dateOfBirth: "1999-01-01" },
     )
-    static endPoint = "http://localhost:3000/api";
-    static defaultQuery = "INSERT INTO Patients (name, dateOfBirth) VALUES "
+    static endPoint = "http://localhost:8000/api/v1/sql/";
+    static defaultQuery = "INSERT INTO patient (name, dateOfBirth) VALUES "
 
     outputContainer;
 
@@ -17,11 +17,11 @@ class SQLQueryManager {
     }
 
 
-    static handleInsert() {
-        let query = this.defaultQuery;
-        for (let i = 0; i < this.defaultRows.length; i++) {
-            query += `("${this.defaultRows[i].name}", "${this.defaultRows[i].dateOfBirth}")`
-            if (i === this.defaultRows.length - 1) {
+    handleInsert() {
+        let query = SQLQueryManager.defaultQuery;
+        for (let i = 0; i < SQLQueryManager.defaultRows.length; i++) {
+            query += `("${SQLQueryManager.defaultRows[i].name}", "${SQLQueryManager.defaultRows[i].dateOfBirth}")`
+            if (i === SQLQueryManager.defaultRows.length - 1) {
                 query += ';';
             } else {
                 query += ',';
@@ -32,7 +32,7 @@ class SQLQueryManager {
     }
 
 
-    static handleSubmit() {
+    handleSubmit() {
         let query = document.getElementById("sql_input_area").value;
         query = query.trim();
         const method = query.split(" ")[0].toUpperCase();
@@ -41,20 +41,23 @@ class SQLQueryManager {
         }
         else if (method === "INSERT") {
             this.handlePost(query);
-        }else {
+        } else {
             this.outputContainer.innerHTML = INVALID_QUERY_MESSAGE;
         }
     }
 
-    static async handlePost(query) {
+    async handlePost(query) {
         try {
-            const response = await fetch(this.endPoint, {
+            const response = await fetch(SQLQueryManager.endPoint, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'text/plain'
                 },
-                body: JSON.stringify({ query: query })
+                body: query
             });
+
+            // const text = await response.text();  
+            // console.log("Response text:", text);
             const data = await response.json();
             if (data.error) {
                 this.outputContainer.innerHTML = data.error;
@@ -66,21 +69,23 @@ class SQLQueryManager {
         }
 
     }
-    static async handleGet(query) {
+    async handleGet(query) {
         try {
-            const response = await fetch(`${this.endPoint}?query=${query}`);
+            console.log(`${SQLQueryManager.endPoint}"${query}"`);
+            const response = await fetch(`${SQLQueryManager.endPoint}"${query}"`);
             const data = await response.json();
+            console.log(data);
             if (data.error) {
                 this.outputContainer.innerHTML = data.error;
             } else {
-                this.outputContainer.innerHTML = this.createTable(data);
+                this.outputContainer.innerHTML = this.createTable(data.result);
             }
         } catch (error) {
             this.outputContainer.innerHTML = error;
         }
 
     }
-    static createTable(data){
+    createTable(data) {
         let table = '<table>';
         for (let i = 0; i < data.length; i++) {
             table += '<tr>';
